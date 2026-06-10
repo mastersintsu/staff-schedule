@@ -8,6 +8,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile | nul
   const [tab, setTab] = useState<'profile' | 'password'>('profile')
 
   const [name, setName] = useState(profile?.name ?? '')
+  const [newEmail, setNewEmail] = useState(email)
   const [nameLoading, setNameLoading] = useState(false)
   const [nameMessage, setNameMessage] = useState('')
 
@@ -24,9 +25,22 @@ export default function ProfileForm({ profile, email }: { profile: Profile | nul
     e.preventDefault()
     setNameLoading(true)
     setNameMessage('')
-    const { error } = await supabase.from('profiles').update({ name }).eq('id', profile!.id)
-    setNameMessage(error ? '保存に失敗しました' : '保存しました')
-    if (!error) router.refresh()
+    // 氏名更新
+    const { error: nameError } = await supabase.from('profiles').update({ name }).eq('id', profile!.id)
+    if (nameError) { setNameMessage('保存に失敗しました'); setNameLoading(false); return }
+    // メールアドレス変更
+    if (newEmail !== email) {
+      const { error: emailError } = await supabase.auth.updateUser({ email: newEmail })
+      if (emailError) {
+        setNameMessage('メールアドレスの変更に失敗しました')
+        setNameLoading(false)
+        return
+      }
+      setNameMessage('保存しました。新しいメールアドレスに確認メールを送りました')
+    } else {
+      setNameMessage('保存しました')
+    }
+    router.refresh()
     setNameLoading(false)
   }
 
@@ -76,7 +90,14 @@ export default function ProfileForm({ profile, email }: { profile: Profile | nul
         <form onSubmit={handleNameSubmit} className="space-y-4">
           <div>
             <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>メールアドレス</label>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{email}</p>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              required
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+            />
           </div>
           <div>
             <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>氏名</label>
