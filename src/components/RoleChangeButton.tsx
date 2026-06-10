@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function RoleChangeButton({ userId, currentRole }: { userId: string; currentRole: string }) {
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
   const router = useRouter()
 
   async function handleChange() {
@@ -13,7 +11,11 @@ export default function RoleChangeButton({ userId, currentRole }: { userId: stri
     const label = newRole === 'admin' ? '管理者（マスター）' : '従業員'
     if (!confirm(`権限を「${label}」に変更しますか？`)) return
     setLoading(true)
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    await fetch('/api/update-role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, role: newRole }),
+    })
     router.refresh()
     setLoading(false)
   }
