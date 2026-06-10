@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import type { Profile } from '@/lib/types'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function ProfileForm({ profile, email }: { profile: Profile | null; email: string }) {
   const [tab, setTab] = useState<'profile' | 'password'>('profile')
@@ -17,6 +18,7 @@ export default function ProfileForm({ profile, email }: { profile: Profile | nul
   const [confirmPassword, setConfirmPassword] = useState('')
   const [pwLoading, setPwLoading] = useState(false)
   const [pwMessage, setPwMessage] = useState('')
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
 
   const router = useRouter()
   const supabase = createClient()
@@ -136,14 +138,24 @@ export default function ProfileForm({ profile, email }: { profile: Profile | nul
           ].map(({ label, value, set }) => (
             <div key={label}>
               <label className="block text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{label}</label>
-              <input
-                type="password"
-                value={value}
-                onChange={e => set(e.target.value)}
-                required
-                className="w-full rounded-lg px-3 py-2 text-sm"
-                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-              />
+              <div className="relative">
+                <input
+                  type={showPasswords[label] ? 'text' : 'password'}
+                  value={value}
+                  onChange={e => set(e.target.value)}
+                  required
+                  className="w-full rounded-lg px-3 py-2 pr-10 text-sm"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(p => ({ ...p, [label]: !p[label] }))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {showPasswords[label] ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           ))}
           {pwMessage && <p className={`text-xs ${isError(pwMessage) ? 'text-red-500' : 'text-green-500'}`}>{pwMessage}</p>}
