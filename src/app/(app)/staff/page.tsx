@@ -3,6 +3,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import AddUserForm from '@/components/AddUserForm'
 import DeleteUserButton from '@/components/DeleteUserButton'
+import RoleChangeButton from '@/components/RoleChangeButton'
 
 export default async function StaffPage() {
   const supabase = await createClient()
@@ -49,9 +50,14 @@ export default async function StaffPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {s.id !== user!.id && (
-                    <DeleteUserButton userId={s.id} name={s.name} />
-                  )}
+                  <div className="flex items-center justify-end gap-2">
+                    {s.id !== user!.id && (
+                      <RoleChangeButton userId={s.id} currentRole={s.role} />
+                    )}
+                    {s.id !== user!.id && (
+                      <DeleteUserButton userId={s.id} name={s.name} />
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
