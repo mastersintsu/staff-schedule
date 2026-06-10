@@ -30,16 +30,18 @@ export default function ProfileForm({ profile, email }: { profile: Profile | nul
     if (nameError) { setNameMessage('保存に失敗しました'); setNameLoading(false); return }
     // メールアドレス変更
     if (newEmail !== email) {
-      const { error: emailError } = await supabase.auth.updateUser({ email: newEmail })
-      if (emailError) {
+      const res = await fetch('/api/update-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newEmail }),
+      })
+      if (!res.ok) {
         setNameMessage('メールアドレスの変更に失敗しました')
         setNameLoading(false)
         return
       }
-      setNameMessage('保存しました。新しいメールアドレスに確認メールを送りました')
-    } else {
-      setNameMessage('保存しました')
     }
+    setNameMessage('保存しました')
     router.refresh()
     setNameLoading(false)
   }
